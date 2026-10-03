@@ -4,7 +4,6 @@ const url = require('url');
 
 const PORT = process.env.PORT || 3000;
 
-// API Endpoints
 const API_MAP = {
   tiktok: 'https://prenivapi.vercel.app/api/tiktok?url=',
   facebook: 'https://prenivapi.vercel.app/api/facebookv1?url=',
@@ -47,7 +46,6 @@ function fetchJson(apiUrl) {
   });
 }
 
-// Full Web UI
 const HTML_CONTENT = `<!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -65,17 +63,17 @@ const HTML_CONTENT = `<!DOCTYPE html>
     <h1 class="text-3xl font-extrabold bg-gradient-to-r from-cyan-400 via-violet-400 to-pink-500 bg-clip-text text-transparent">
       <i class="fa-solid fa-cloud-arrow-down mr-2 text-cyan-400"></i>PRENIV DL
     </h1>
-    <p class="text-slate-400 text-sm mt-1">TikTok, Facebook, Instagram, YouTube, Spotify ও অন্যান্য মিডিয়া ডাউনলোড করুন</p>
+    <p class="text-slate-400 text-sm mt-1">TikTok, Facebook, Instagram, YouTube, Spotify ডাউনলোডার</p>
   </header>
 
   <main class="max-w-2xl mx-auto px-4 py-8 w-full">
     <div class="bg-slate-900/80 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-2xl">
-      <label class="block text-sm font-medium text-slate-300 mb-2">সোশ্যাল মিডিয়া ভিডিও/অডিও লিংক পেস্ট করুন:</label>
+      <label class="block text-sm font-medium text-slate-300 mb-2">ভিডিও বা অডিও লিংক পেস্ট করুন:</label>
       <div class="flex flex-col sm:flex-row gap-3">
-        <input id="urlInput" type="url" placeholder="https://www.tiktok.com/... বা https://open.spotify.com/..." 
-          class="flex-1 px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none text-white text-sm" />
+        <input id="urlInput" type="url" placeholder="https://www.tiktok.com/... বা https://www.facebook.com/..." 
+          class="flex-1 px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 focus:border-cyan-400 outline-none text-white text-sm" />
         <button id="downloadBtn" onclick="processUrl()" 
-          class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 font-semibold rounded-xl transition duration-200 shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
+          class="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 font-semibold rounded-xl transition shadow flex items-center justify-center gap-2">
           <span>খুঁজুন</span>
           <i class="fa-solid fa-arrow-right"></i>
         </button>
@@ -92,20 +90,44 @@ const HTML_CONTENT = `<!DOCTYPE html>
 
     <div id="status" class="hidden mt-6 text-center text-sm py-3 px-4 rounded-xl"></div>
 
-    <div id="resultBox" class="hidden mt-6 bg-slate-900/90 p-5 rounded-2xl border border-slate-700 shadow-xl">
-      <div class="flex flex-col sm:flex-row gap-4 items-center">
-        <img id="thumbImg" src="" alt="Thumbnail" class="w-full sm:w-44 h-40 object-cover rounded-xl bg-slate-800 border border-slate-700" />
-        <div class="flex-1 w-full">
-          <h2 id="mediaTitle" class="text-base font-bold line-clamp-2 text-slate-100"></h2>
-          <p id="mediaAuthor" class="text-xs text-slate-400 mt-1"></p>
-          <div id="downloadButtons" class="mt-4 flex flex-wrap gap-2"></div>
-        </div>
+    <!-- Media Player & Download Card -->
+    <div id="resultBox" class="hidden mt-6 bg-slate-900/90 p-6 rounded-2xl border border-slate-700 shadow-2xl flex flex-col gap-6">
+      
+      <!-- Title & Details -->
+      <div>
+        <h2 id="mediaTitle" class="text-lg font-bold text-slate-100"></h2>
+        <p id="mediaAuthor" class="text-xs text-slate-400 mt-1"></p>
       </div>
+
+      <!-- 1. Cover Box -->
+      <div id="coverSection" class="hidden flex flex-col items-center bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+        <span class="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">১. কভার ফটো (Cover)</span>
+        <img id="thumbImg" src="" alt="Cover" class="w-48 h-48 object-cover rounded-xl shadow-md border border-slate-700" />
+        <a id="coverDlBtn" href="#" target="_blank" download="cover.jpg" 
+          class="mt-3 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg transition flex items-center gap-2">
+          <i class="fa-solid fa-image"></i> Download Cover
+        </a>
+      </div>
+
+      <!-- 2. Video Player Box -->
+      <div id="videoSection" class="hidden flex flex-col bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+        <span class="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide text-center">২. ভিডিও প্লেয়ার (Video Player)</span>
+        <video id="videoPlayer" controls class="w-full max-h-96 rounded-xl bg-black border border-slate-800"></video>
+        <div id="videoDownloadButtons" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
+      </div>
+
+      <!-- 3. Audio Player Box -->
+      <div id="audioSection" class="hidden flex flex-col bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+        <span class="text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide text-center">৩. অডিও প্লেয়ার (Audio Player)</span>
+        <audio id="audioPlayer" controls class="w-full mt-1"></audio>
+        <div id="audioDownloadButtons" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
+      </div>
+
     </div>
   </main>
 
   <footer class="py-4 text-center text-xs text-slate-500 border-t border-slate-900">
-    PrenivDL API & Web Service • Powered by Render
+    PrenivDL Service • Powered by Render
   </footer>
 
   <script>
@@ -122,7 +144,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
       }
 
       resultBox.classList.add('hidden');
-      showStatus('<i class="fa-solid fa-spinner fa-spin mr-2"></i>ডাটা লোড হচ্ছে, একটু অপেক্ষা করুন...', 'bg-blue-500/20 text-cyan-300 border border-cyan-500/30');
+      showStatus('<i class="fa-solid fa-spinner fa-spin mr-2"></i>মিডিয়া প্রসেস হচ্ছে, কয়েক সেকেন্ড অপেক্ষা করুন...', 'bg-blue-500/20 text-cyan-300 border border-cyan-500/30');
       downloadBtn.disabled = true;
 
       try {
@@ -136,7 +158,7 @@ const HTML_CONTENT = `<!DOCTYPE html>
         status.classList.add('hidden');
         renderResult(resData.data);
       } catch (err) {
-        showStatus('ত্রুটি: ' + (err.message || 'ডাউনলোড লিংক তৈরি করা যায়নি'), 'bg-rose-500/20 text-rose-300 border border-rose-500/30');
+        showStatus('ত্রুটি: ' + (err.message || 'মিডিয়া লোড করা যায়নি। লিংকটি সঠিক কিনা বা পাবলিক কিনা চেক করুন।'), 'bg-rose-500/20 text-rose-300 border border-rose-500/30');
       } finally {
         downloadBtn.disabled = false;
       }
@@ -153,28 +175,61 @@ const HTML_CONTENT = `<!DOCTYPE html>
       const box = document.getElementById('resultBox');
       document.getElementById('mediaTitle').innerText = data.title || 'মিডিয়া ফাইল';
       document.getElementById('mediaAuthor').innerText = data.author ? 'লেখক/শিল্পী: ' + data.author : '';
-      
-      const thumb = document.getElementById('thumbImg');
+
+      // 1. Cover
+      const coverSection = document.getElementById('coverSection');
       if (data.thumbnail) {
-        thumb.src = data.thumbnail;
-        thumb.classList.remove('hidden');
+        document.getElementById('thumbImg').src = data.thumbnail;
+        document.getElementById('coverDlBtn').href = data.thumbnail;
+        coverSection.classList.remove('hidden');
       } else {
-        thumb.classList.add('hidden');
+        coverSection.classList.add('hidden');
       }
 
-      const btnContainer = document.getElementById('downloadButtons');
-      btnContainer.innerHTML = '';
+      // 2. Video Player & Downloads
+      const videoSection = document.getElementById('videoSection');
+      const videoPlayer = document.getElementById('videoPlayer');
+      const videoDlContainer = document.getElementById('videoDownloadButtons');
+      videoDlContainer.innerHTML = '';
 
-      if (data.downloads && data.downloads.length > 0) {
-        data.downloads.forEach(dl => {
+      const videoList = (data.downloads || []).filter(d => d.type === 'video');
+      if (videoList.length > 0) {
+        videoPlayer.src = videoList[0].url;
+        videoList.forEach(v => {
           const a = document.createElement('a');
-          a.href = dl.url;
+          a.href = v.url;
           a.target = '_blank';
-          a.rel = 'noopener noreferrer';
           a.className = 'px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs rounded-lg transition shadow flex items-center gap-2';
-          a.innerHTML = '<i class="fa-solid fa-download"></i> ' + (dl.label || 'Download');
-          btnContainer.appendChild(a);
+          a.innerHTML = '<i class="fa-solid fa-video"></i> ' + (v.label || 'Download Video');
+          videoDlContainer.appendChild(a);
         });
+        videoSection.classList.remove('hidden');
+      } else {
+        videoSection.classList.add('hidden');
+        videoPlayer.removeAttribute('src');
+      }
+
+      // 3. Audio Player & Downloads
+      const audioSection = document.getElementById('audioSection');
+      const audioPlayer = document.getElementById('audioPlayer');
+      const audioDlContainer = document.getElementById('audioDownloadButtons');
+      audioDlContainer.innerHTML = '';
+
+      const audioList = (data.downloads || []).filter(d => d.type === 'audio');
+      if (audioList.length > 0) {
+        audioPlayer.src = audioList[0].url;
+        audioList.forEach(aItem => {
+          const a = document.createElement('a');
+          a.href = aItem.url;
+          a.target = '_blank';
+          a.className = 'px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white font-medium text-xs rounded-lg transition shadow flex items-center gap-2';
+          a.innerHTML = '<i class="fa-solid fa-music"></i> ' + (aItem.label || 'Download Audio');
+          audioDlContainer.appendChild(a);
+        });
+        audioSection.classList.remove('hidden');
+      } else {
+        audioSection.classList.add('hidden');
+        audioPlayer.removeAttribute('src');
       }
 
       box.classList.remove('hidden');
@@ -184,7 +239,6 @@ const HTML_CONTENT = `<!DOCTYPE html>
 </html>`;
 
 const server = http.createServer(async (req, res) => {
-  // CORS হেডার (Lovable বা যেকোনো ফ্রন্টএন্ড থেকে কল করার জন্য)
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -196,7 +250,6 @@ const server = http.createServer(async (req, res) => {
 
   const parsed = url.parse(req.url, true);
 
-  // API এন্ডপয়েন্ট (যা Lovable লাইব্রেরি হিসেবে কল করবে)
   if (parsed.pathname === '/api/download') {
     const mediaUrl = parsed.query.url;
     if (!mediaUrl) {
@@ -207,36 +260,64 @@ const server = http.createServer(async (req, res) => {
     const platform = detectPlatform(mediaUrl);
     if (!platform || !API_MAP[platform]) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ success: false, error: 'Unsupported platform' }));
+      return res.end(JSON.stringify({ success: false, error: 'এই প্ল্যাটফর্মটি সমর্থিত নয়।' }));
     }
 
     try {
       const apiUrl = `${API_MAP[platform]}${encodeURIComponent(mediaUrl)}`;
       const result = await fetchJson(apiUrl);
 
-      if (!result || !result.status) {
+      if (!result || !result.status || !result.data) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify({ success: false, error: 'Failed to fetch media data' }));
+        return res.end(JSON.stringify({ success: false, error: 'ভিডিও/অডিওর লিংক পাওয়া যায়নি। লিংকটি প্রাইভেট বা ইনভ্যালিড হতে পারে।' }));
       }
 
       const downloads = [];
       const d = result.data || {};
 
-      if (d.video_hd || d.hd) downloads.push({ label: 'Download Video (HD MP4)', url: d.video_hd || d.hd });
-      if (d.video_sd || d.sd) downloads.push({ label: 'Download Video (SD MP4)', url: d.video_sd || d.sd });
-      if (d.video && !d.video_hd) downloads.push({ label: 'Download Video (MP4)', url: d.video });
-      if (d.audio || d.music) downloads.push({ label: 'Download Audio (MP3)', url: d.audio || d.music });
-      if (Array.isArray(d.downloads)) {
-        d.downloads.forEach((item, idx) => {
-          downloads.push({ label: item.title || ('Format ' + (idx + 1)), url: item.url });
+      // Handle Videos
+      if (d.video_hd || d.hd) downloads.push({ label: 'Download Video (HD MP4)', url: d.video_hd || d.hd, type: 'video' });
+      if (d.video_sd || d.sd) downloads.push({ label: 'Download Video (SD MP4)', url: d.video_sd || d.sd, type: 'video' });
+      if (d.video && !d.video_hd) downloads.push({ label: 'Download Video (MP4)', url: d.video, type: 'video' });
+
+      // Handle Audios
+      if (d.audio || d.music) downloads.push({ label: 'Download Audio (MP3)', url: d.audio || d.music, type: 'audio' });
+
+      // Handle Media Arrays (Instagram/TikTok/YouTube)
+      if (Array.isArray(d.media)) {
+        d.media.forEach(m => {
+          if (m && m.url) {
+            const isVideo = m.url.includes('.mp4') || (m.type && m.type.includes('video'));
+            downloads.push({
+              label: isVideo ? 'Download Video (MP4)' : 'Download Image',
+              url: m.url,
+              type: isVideo ? 'video' : 'image'
+            });
+          }
         });
+      }
+
+      if (Array.isArray(d.downloads)) {
+        d.downloads.forEach(dl => {
+          if (typeof dl === 'string') {
+            downloads.push({ label: 'Download Video (MP4)', url: dl, type: 'video' });
+          } else if (dl && dl.url) {
+            downloads.push({ label: dl.title || 'Download Video', url: dl.url, type: 'video' });
+          }
+        });
+      }
+
+      // Check if any download link exists
+      if (downloads.length === 0 && !d.thumbnail && !d.cover) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ success: false, error: 'এই লিংক থেকে কোনো মিডিয়া ফাইল পাওয়া যায়নি।' }));
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({
         success: true,
         data: {
-          title: d.title || result.title || 'Media File',
+          title: d.title || result.title || 'Social Media File',
           author: d.author || result.author || '',
           thumbnail: d.thumbnail || d.cover || result.thumbnail || '',
           downloads: downloads
@@ -248,7 +329,6 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // রুট পেজে ওয়েবসাইট ডিজাইন দেখাবে
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(HTML_CONTENT);
 });
